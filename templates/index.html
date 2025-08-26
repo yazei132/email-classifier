@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classificador de E-mails com IA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #4a6fa5 0%, #2e4a7a 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .form-container {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2e4a7a;
+            font-size: 1.1rem;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #4a6fa5;
+            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.1);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #4a6fa5 0%, #2e4a7a 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #4a6fa5;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result-container {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: none;
+            border: 2px solid #e9ecef;
+        }
+        
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f1f3f5;
+        }
+        
+        .result-icon {
+            font-size: 2.5rem;
+            margin-right: 20px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .productive {
+            color: #28a745;
+            background: #d4edda;
+        }
+        
+        .unproductive {
+            color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .result-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .result-details {
+            margin-bottom: 25px;
+        }
+        
+        .result-details p {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .response-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4a6fa5;
+        }
+        
+        .response-section h3 {
+            color: #2e4a7a;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .response-text {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            font-style: italic;
+            border: 1px solid #dee2e6;
+        }
+        
+        .examples {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e7f3ff;
+            border-radius: 8px;
+        }
+        
+        .examples h3 {
+            color: #2e4a7a;
+            margin-bottom: 15px;
+        }
+        
+        .example-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .example-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+        
+        .example-btn:hover {
+            background: #5a6268;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #6c757d;
+            font-size: 0.9rem;
+            padding: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            header {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .result-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .result-icon {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📧 Classificador de E-mails com IA</h1>
+            <p class="description">Digite o conteúdo do e-mail e receba uma classificação inteligente com resposta automática</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="form-container">
+                <div class="form-group">
+                    <label for="email-content">Conteúdo do E-mail:</label>
+                    <textarea id="email-content" placeholder="Digite o conteúdo do e-mail aqui..."></textarea>
+                </div>
+                
+                <button id="analyze-btn">🔍 Analisar E-mail</button>
+            </div>
+            
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Analisando com IA Gemini...</p>
+            </div>
+            
+            <div class="result-container" id="result-container">
+                <div class="result-header">
+                    <div class="result-icon" id="result-icon">✓</div>
+                    <div class="result-title" id="result-title">E-mail Classificado como Produtivo</div>
+                </div>
+                
+                <div class="result-details">
+                    <p>O conteúdo do e-mail foi analisado pela IA e classificado como: <strong id="result-category">Produtivo</strong></p>
+                    <p id="result-explanation">Este e-mail contém conteúdo relevante para o trabalho ou objetivos profissionais.</p>
+                </div>
+                
+                <div class="response-section">
+                    <h3>💡 Resposta Sugerida:</h3>
+                    <div class="response-text" id="response-text">
+                        Obrigado pelo seu e-mail. Analisarei o conteúdo e retornarei em breve.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="examples">
+                <h3>🚀 Exemplos Rápidos:</h3>
+                <div class="example-buttons">
+                    <button class="example-btn" onclick="loadExample('produtivo')">E-mail Produtivo</button>
+                    <button class="example-btn" onclick="loadExample('improdutivo')">E-mail Improdutivo</button>
+                    <button class="example-btn" onclick="loadExample('urgente')">Urgente (Produtivo)</button>
+                    <button class="example-btn" onclick="loadExample('ajuda')">Pedido de Ajuda</button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Powered by Google Gemini AI & Flask | &copy; 2024</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const emailContent = document.getElementById('email-content');
+            const loadingElement = document.querySelector('.loading');
+            const resultContainer = document.getElementById('result-container');
+            const resultIcon = document.getElementById('result-icon');
+            const resultTitle = document.getElementById('result-title');
+            const resultCategory = document.getElementById('result-category');
+            const resultExplanation = document.getElementById('result-explanation');
+            const responseText = document.getElementById('response-text');
+            
+            analyzeBtn.addEventListener('click', function() {
+                const content = emailContent.value.trim();
+                
+                if (!content) {
+                    alert('Por favor, digite o conteúdo do e-mail.');
+                    return;
+                }
+                
+                // Mostrar loading
+                loadingElement.style.display = 'block';
+                resultContainer.style.display = 'none';
+                
+                // Enviar para o backend
+                fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email_content: content })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Esconder loading
+                    loadingElement.style.display = 'none';
+                    
+                    // Mostrar resultados
+                    if (data.category === 'produtivo') {
+                        resultIcon.className = 'result-icon productive';
+                        resultIcon.textContent = '✓';
+                        resultTitle.textContent = 'E-mail Classificado como Produtivo';
+                        resultCategory.textContent = 'Produtivo';
+                        resultExplanation.textContent = 'Este e-mail contém conteúdo relevante para o trabalho ou objetivos profissionais.';
+                    } else {
+                        resultIcon.className = 'result-icon unproductive';
+                        resultIcon.textContent = '✗';
+                        resultTitle.textContent = 'E-mail Classificado como Improdutivo';
+                        resultCategory.textContent = 'Improdutivo';
+                        resultExplanation.textContent = 'Este e-mail não contém conteúdo relevante para o trabalho ou objetivos profissionais.';
+                    }
+                    
+                    responseText.textContent = data.response;
+                    resultContainer.style.display = 'block';
+                    
+                    // Scroll para o resultado
+                    resultContainer.scrollIntoView({ behavior: 'smooth' });
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    loadingElement.style.display = 'none';
+                    alert('Ocorreu um erro ao analisar o e-mail. Tente novamente.');
+                });
+            });
+            
+            // Funções para exemplos
+            window.loadExample = function(type) {
+                const examples = {
+                    'produtivo': 'Prezados, gostaria de agendar uma reunião para discutir o projeto XYZ. Precisamos alinhar os prazos de entrega e revisar o orçamento.',
+                    'improdutivo': 'GANHE AGORA! Oferta exclusiva limitada! Dinheiro rápido e fácil! Clique aqui para receber R$ 5000 em 5 dias!',
+                    'urgente': 'URGENTE: Precisamos resolver um problema crítico no sistema. Cliente importante está com dificuldades e precisamos agir rapidamente.',
+                    'ajuda': 'Olá, preciso de ajuda para resolver uma pendência técnica no código. Encontrei um bug que está impedindo o deploy da aplicação.'
+                };
+                
+                emailContent.value = examples[type];
+            };
+        });
+    </script>
+</body>
+</html>
