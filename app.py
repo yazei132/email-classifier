@@ -176,7 +176,6 @@ def index():
     return render_template('index.html')
 
 @app.route('/analyze', methods=['POST'])
-@app.route('/analyze', methods=['POST'])
 def analyze_email():
     try:
         # Verifica se veio um arquivo (PDF/TXT)
