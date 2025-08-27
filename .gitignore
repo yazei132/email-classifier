@@ -1,0 +1,11 @@
+# Arquivos de ambiente
+.env
+.env.local
+.env.production
+.env.development
+
+# Chaves e segredos
+*.key
+*.pem
+secrets.txt
+config.ini

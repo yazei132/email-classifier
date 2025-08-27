@@ -10,14 +10,16 @@ import os
 import google.generativeai as genai
 import unicodedata
 from PyPDF2 import PdfReader
+from dotenv import load_dotenv
 
 # ===== CONFIGURAÇÃO INICIAL =====
 app = Flask(__name__)
 CORS(app)
 
-# ===== CONFIGURAÇÃO GEMINI AI =====
 # ===== CHAVE DA API =====
-GENINI_API_KEY = "AIzaSyCc73A4noSXLwjtn-9Cyfoq_o_lqUZAuyU"
+load_dotenv()
+
+GENINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 genai.configure(api_key=GENINI_API_KEY)
 
 # ===== DOWNLOAD RECURSOS NLTK =====
