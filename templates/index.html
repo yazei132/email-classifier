@@ -90,6 +90,63 @@
             box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.1);
         }
         
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .file-upload-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border: 2px dashed #4a6fa5;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: rgba(74, 111, 165, 0.05);
+        }
+        
+        .file-upload-label:hover {
+            background-color: rgba(74, 111, 165, 0.1);
+            border-color: #2e4a7a;
+        }
+        
+        .file-upload-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #4a6fa5;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-name {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .upload-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            align-self: flex-start;
+        }
+        
+        .upload-btn:hover {
+            background: #5a6268;
+        }
+        
         button {
             background: linear-gradient(135deg, #4a6fa5 0%, #2e4a7a 100%);
             color: white;
@@ -281,7 +338,7 @@
     <div class="container">
         <header>
             <h1>📧 Classificador de E-mails com IA</h1>
-            <p class="description">Digite o conteúdo do e-mail e receba uma classificação inteligente com resposta automática</p>
+            <p class="description">Digite o conteúdo do e-mail ou envie um arquivo PDF/TXT para receber uma classificação inteligente com resposta automática</p>
         </header>
         
         <div class="main-content">
@@ -289,6 +346,19 @@
                 <div class="form-group">
                     <label for="email-content">Conteúdo do E-mail:</label>
                     <textarea id="email-content" placeholder="Digite o conteúdo do e-mail aqui..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Ou envie um arquivo:</label>
+                    <div class="file-upload">
+                        <label for="file-upload-input" class="file-upload-label">
+                            <div class="file-upload-icon">📎</div>
+                            <span>Clique para selecionar um arquivo PDF ou TXT</span>
+                            <span class="file-name" id="file-name">Nenhum arquivo selecionado</span>
+                            <input type="file" id="file-upload-input" class="file-input" accept=".pdf,.txt">
+                        </label>
+                        <button class="upload-btn" onclick="uploadFile()">📤 Enviar Arquivo</button>
+                    </div>
                 </div>
                 
                 <button id="analyze-btn">🔍 Analisar E-mail</button>
@@ -338,6 +408,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             const analyzeBtn = document.getElementById('analyze-btn');
             const emailContent = document.getElementById('email-content');
+            const fileInput = document.getElementById('file-upload-input');
+            const fileName = document.getElementById('file-name');
             const loadingElement = document.querySelector('.loading');
             const resultContainer = document.getElementById('result-container');
             const resultIcon = document.getElementById('result-icon');
@@ -345,6 +417,15 @@
             const resultCategory = document.getElementById('result-category');
             const resultExplanation = document.getElementById('result-explanation');
             const responseText = document.getElementById('response-text');
+            
+            // Mostrar nome do arquivo selecionado
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    fileName.textContent = this.files[0].name;
+                } else {
+                    fileName.textContent = 'Nenhum arquivo selecionado';
+                }
+            });
             
             analyzeBtn.addEventListener('click', function() {
                 const content = emailContent.value.trim();
@@ -399,6 +480,64 @@
                 });
             });
             
+            // Função para upload de arquivo
+            window.uploadFile = function() {
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    alert('Por favor, selecione um arquivo PDF ou TXT');
+                    return;
+                }
+
+                // Mostrar loading
+                loadingElement.style.display = 'block';
+                resultContainer.style.display = 'none';
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Esconder loading
+                    loadingElement.style.display = 'none';
+                    
+                    if (data.error) {
+                        alert('Erro: ' + data.error);
+                        return;
+                    }
+                    
+                    // Mostrar resultados
+                    if (data.category === 'produtivo') {
+                        resultIcon.className = 'result-icon productive';
+                        resultIcon.textContent = '✓';
+                        resultTitle.textContent = 'E-mail Classificado como Produtivo';
+                        resultCategory.textContent = 'Produtivo';
+                        resultExplanation.textContent = 'Este e-mail contém conteúdo relevante para o trabalho ou objetivos profissionais.';
+                    } else {
+                        resultIcon.className = 'result-icon unproductive';
+                        resultIcon.textContent = '✗';
+                        resultTitle.textContent = 'E-mail Classificado como Improdutivo';
+                        resultCategory.textContent = 'Improdutivo';
+                        resultExplanation.textContent = 'Este e-mail não contém conteúdo relevante para o trabalho ou objetivos profissionais.';
+                    }
+                    
+                    responseText.textContent = data.response;
+                    resultContainer.style.display = 'block';
+                    
+                    // Scroll para o resultado
+                    resultContainer.scrollIntoView({ behavior: 'smooth' });
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    loadingElement.style.display = 'none';
+                    alert('Ocorreu um erro ao analisar o arquivo. Tente novamente.');
+                });
+            };
+            
             // Funções para exemplos
             window.loadExample = function(type) {
                 const examples = {
@@ -409,6 +548,8 @@
                 };
                 
                 emailContent.value = examples[type];
+                fileName.textContent = 'Nenhum arquivo selecionado';
+                fileInput.value = '';
             };
         });
     </script>

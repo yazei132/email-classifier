@@ -9,6 +9,7 @@ import requests
 import os
 import google.generativeai as genai
 import unicodedata
+from PyPDF2 import PdfReader
 
 # ===== CONFIGURAÇÃO INICIAL =====
 app = Flask(__name__)
@@ -175,10 +176,22 @@ def index():
     return render_template('index.html')
 
 @app.route('/analyze', methods=['POST'])
+@app.route('/analyze', methods=['POST'])
 def analyze_email():
     try:
-        data = request.get_json()
-        email_content = data.get('email_content', '')
+        # Verifica se veio um arquivo (PDF/TXT)
+        if 'file' in request.files:
+            file = request.files['file']
+            if file and (file.filename.endswith('.pdf') or file.filename.endswith('.txt')):
+                if file.filename.endswith('.pdf'):
+                    pdf_reader = PdfReader(file)
+                    email_content = "".join(page.extract_text() for page in pdf_reader.pages)
+                else:
+                    email_content = file.read().decode('utf-8')
+        else:
+            # Se não veio arquivo, pega do JSON (texto digitado)
+            data = request.get_json()
+            email_content = data.get('email_content', '')
         
         if not email_content:
             return jsonify({'error': 'Nenhum conteúdo de e-mail fornecido'}), 400
@@ -196,9 +209,8 @@ def analyze_email():
         
     except Exception as e:
         return jsonify({'error': f'Erro ao processar o e-mail: {str(e)}'}), 500
-
 # ===== EXECUÇÃO DO SERVIDOR FLASK =====
 if __name__ == '__main__':
-    print("🚀 Iniciando servidor Flask...")
-    print("📧 Acesse: http://localhost:5000")
+    print("Sucesso, iniciando servidor Flask...")
+
     app.run(debug=True, host='0.0.0.0', port=5000)
