@@ -2,7 +2,7 @@
 Um sistema inteligente que classifica emails em "produtivos" ou "improdutivos" utilizando Google Gemini AI e gera respostas automáticas personalizadas.
 
 ✨ Funcionalidades
-🤖 Classificação Inteligente: Usa Google Gemini AI para análise contextual de emails
+🤖 Classificação Inteligente: Usa Google Gemini AI para análise contextual de emails.
 
 📝 Respostas Automáticas: Gera respostas personalizadas baseadas na categoria do email
 
