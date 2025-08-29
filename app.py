@@ -9,7 +9,7 @@ import requests
 import os
 import google.generativeai as genai
 import unicodedata
-from PyPDF import PdfReader
+from pypdf import PdfReader
 from dotenv import load_dotenv
 
 # ===== CONFIGURAÇÃO INICIAL =====
