@@ -94,3 +94,5 @@ Marketing não solicitado
 Golpes e phishing
 
 Conteúdo não profissional
+
+Arquivo deployado https://email-classifier-17xp.onrender.com/
